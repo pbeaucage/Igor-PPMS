@@ -1,12 +1,13 @@
 #pragma rtGlobals=1		// Use modern global access method
 
 //Igor support for PPMS data loading and plotting
-// v. 0.3b2
+// v. 0.3b3
 // by Peter Beaucage (pab275@cornell.edu)
 //
 // Revision history:
 
 // 0.3:
+// - Added plotting (& generation of) -log(-moment) to visualize transition onsets.
 // - Rewrote loader to avoid prompt for duplicate variables.
 // - Corrected bug for normalized moment.
 
