@@ -1,20 +1,23 @@
 #pragma rtGlobals=1		// Use modern global access method
 
 //Igor support for PPMS data loading and plotting
-// v. 0.3b
+// v. 0.3b2
 // by Peter Beaucage (pab275@cornell.edu)
 //
 // Revision history:
 
 // 0.3:
 // - Rewrote loader to avoid prompt for duplicate variables.
-// 
+// - Corrected bug for normalized moment.
 
 
 Menu "PPMS"
 	"Load PPMS Data File",PPMS_LoadData()
 	"---"
 	Submenu "VSM Plots"
+		"NegLogNeg Normalized Moment vs Temperature",PPMS_NegLogNegMomentVsTempPlot()
+		"NegLogNeg Normalized Moment vs Field",PPMS_NegLogNegMomentVsFieldPlot()
+		"---"
 		"Normalized Moment vs Temperature",PPMS_NormMomentVsTempPlot()
 		"Normalized Moment vs Field",PPMS_NormMomentVsFieldPlot()
 		"---"
@@ -92,6 +95,7 @@ function PPMS_LoadData()
 	LoadWave/J/D/W/A/B=columnInfoStr/K=0/L={header,header+1,0,0,0} fileToLoadPath
 	PPMS_ComputeTempandFieldErrors()
 	PPMS_ComputeNormMoment()
+	PPMS_ComputeNegLogNeg()
 	Variable/G firstPoint = 0
 	Variable/G lastPoint = numpnts(Temperature__K_)
 	
@@ -120,6 +124,12 @@ function PPMS_ComputeNormMoment()
 		NormMStdErr_ = M__Std__Err___emu_ / (SampleMass/1000)
 end
 
+function PPMS_ComputeNegLogNeg()
+	WAVE NormMoment__emug_
+	
+	duplicate NormMoment__emug_ NegLogNegNormMoment__emug_
+	NegLogNegNormMoment__emug_ = -log(-NormMoment__emug_)
+end
 
 function PPMS_NormMomentVsFieldPlot()
 	PPMS_SelectData()
@@ -151,6 +161,40 @@ function PPMS_NormMomentVsTempPlot()
 	ModifyGraph mode=3,msize=2
 	ErrorBars NormMoment__emug_ XY,wave=(TempErrorPos[firstPoint,lastPoint],TempErrorNeg[firstPoint,lastPoint]),wave=(NormMStdErr_[firstPoint,lastPoint],NormMStdErr_[firstPoint,lastPoint])
 	Label left "Magnetic Moment (emu/g)"
+	SetAxis left *,0
+	SetAxis bottom 2,12
+	Label bottom "Temperature (K)"
+	TextBox/C/N=text0/A=MC "PPMS-VSM Moment vs Temperature\r" + currentFolder + "\rField=" + field + " Oe"
+end
+
+function PPMS_NegLogNegMomentVsFieldPlot()
+	PPMS_SelectData()
+	
+	Wave Temperature__K_
+	Variable /G firstPoint, lastPoint
+	
+	String currentFolder = GetDataFolder(0)
+	String temperature = Num2Str(Temperature__K_(firstPoint))
+
+	Display NegLogNegNormMoment__emug_[firstPoint,lastPoint] vs Magnetic_Field__Oe_[firstPoint,lastPoint]
+	ModifyGraph mode=3,msize=2
+	Label left "-log(-Magnetic Moment) (emu/g)"
+	Label bottom "Magnetic Field (Oe)"
+	TextBox/C/N=text0/A=MC "PPMS-VSM Moment vs Field\r" + currentFolder + "\rT=" + temperature + " K"
+end
+	
+function PPMS_NegLogNegMomentVsTempPlot()
+	PPMS_SelectData()
+
+	Wave Magnetic_Field__Oe_
+	Variable /G firstPoint, lastPoint
+	
+	String currentFolder = GetDataFolder(0)
+	String field = Num2Str(Magnetic_Field__Oe_(firstPoint))
+	
+	Display NegLogNegNormMoment__emug_[firstPoint,lastPoint] vs Temperature__K_[firstPoint,lastPoint]
+	ModifyGraph mode=3,msize=2
+	Label left "-log(-Magnetic Moment) (emu/g)"
 	SetAxis left *,0
 	SetAxis bottom 2,12
 	Label bottom "Temperature (K)"
