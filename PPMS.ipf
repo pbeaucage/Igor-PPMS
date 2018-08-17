@@ -1,4 +1,6 @@
 #pragma rtGlobals=1		// Use modern global access method
+#include <AxisSlider>
+#include <TransformAxis1.2>
 
 //Igor support for PPMS data loading and plotting
 // v. 0.3b3
@@ -7,6 +9,7 @@
 // Revision history:
 
 // 0.3:
+// - Added a transformed axis option for field periodicity in flux sweeps
 // - Added plotting (& generation of) -log(-moment) to visualize transition onsets.
 // - Rewrote loader to avoid prompt for duplicate variables.
 // - Corrected bug for normalized moment.
@@ -24,6 +27,9 @@ Menu "PPMS"
 		"---"
 		"Raw Moment vs Temperature",PPMS_MomentVsTempPlot()
 		"Raw Moment vs Field",PPMS_MomentVsFieldPlot()
+	End
+	Submenu "VSM Plot Tools"
+		"Add Field Periodicity Axis to Top Graph",PPMS_AddFieldPeriodicityAxis()
 	End
 	Submenu "Resistivity Plots"
 		"Resistance vs Temperature"
@@ -130,6 +136,23 @@ function PPMS_ComputeNegLogNeg()
 	
 	duplicate NormMoment__emug_ NegLogNegNormMoment__emug_
 	NegLogNegNormMoment__emug_ = -log(-NormMoment__emug_)
+end
+
+
+Function TransAx_FieldPer(w, val)
+	Wave/Z w
+	Variable val
+	
+	if(val==0)
+		return 0
+	else
+		return sqrt(abs(2.0678338e7/val))
+	endif
+end
+
+function PPMS_AddFieldPeriodicityAxis()
+	SetupTransformMirrorAxis(WinName(0,1),"bottom","TransAx_FieldPer",$"",3,1,5,1)
+	Label MT_bottom "Field Periodicity (nm)"
 end
 
 function PPMS_NormMomentVsFieldPlot()
