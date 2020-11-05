@@ -139,7 +139,7 @@ function PPMS_ComputeNegLogNeg()
 end
 
 
-Function TransAx_FieldPer(w, val)
+Function TransAx_FieldPerOe(w, val)
 	Wave/Z w
 	Variable val
 	
@@ -149,6 +149,18 @@ Function TransAx_FieldPer(w, val)
 		return sqrt(abs(2.0678338e7/val))
 	endif
 end
+
+Function TransAx_FieldPerAm(w, val)
+	Wave/Z w
+	Variable val
+	
+	if(val==0)
+		return 0
+	else
+		return sqrt(abs(2.0678338e7/(val*(4*pi)/10^3)))
+	endif
+end
+
 
 function PPMS_AddFieldPeriodicityAxis()
 	SetupTransformMirrorAxis(WinName(0,1),"bottom","TransAx_FieldPer",$"",3,1,5,1)
